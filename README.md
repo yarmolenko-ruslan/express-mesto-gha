@@ -18,6 +18,9 @@
 * Express JS
 * MongoDB
 
+## Ссылка на проект
+[https://github.com/yarmolenko-ruslan/express-mesto-gha](https://github.com/yarmolenko-ruslan/express-mesto-gha)
+
 
 ## Запуск проекта
 
