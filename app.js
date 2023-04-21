@@ -1,11 +1,12 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
-const router = require("./routes");
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const router = require('./routes');
+const { NOT_FOUND_ERROR } = require('./utils/errorMessage');
 
 // устанавливаем переменную PORT и задаем дефолтное знаение
 const { PORT = 3000 } = process.env;
-mongoose.connect("mongodb://localhost:27017/mestodb");
+mongoose.connect('mongodb://localhost:27017/mestodb');
 const app = express();
 
 // парсим файл json
@@ -15,10 +16,16 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // временное решение заменяющее id пользователя
 app.use((req, res, next) => {
   req.user = {
-    _id: "643cd1803d774ff3217cf717",
+    _id: '643cd1803d774ff3217cf717',
   };
 
   next();
+});
+
+app.use((req, res) => {
+  res
+    .status(NOT_FOUND_ERROR)
+    .send({ message: 'Запрашиваемый ресурс не найден' });
 });
 
 // создаем роуты

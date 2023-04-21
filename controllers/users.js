@@ -1,33 +1,34 @@
-const User = require("../models/user");
-const errorMessage = require("../utils/errorMessage");
+const User = require('../models/user');
+const errorMessage = require('../utils/errorMessage');
 
 // функция создания пользователя
-const createUser = (req, res) => {
+function createUser(req, res) {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
     .then((user) => res.send(user))
     .catch((err) => errorMessage(req, res, err));
-};
+}
 
 // функция возврата всех пользователей
-const getUser = (req, res) => {
+function getUser(req, res) {
   User.find({})
     .then((user) => {
       res.send(user);
     })
     .catch((err) => errorMessage(req, res, err));
-};
+}
 
 // функция возвращает пользователя по id
-const findUserById = (req, res) => {
+function findUserById(req, res) {
   User.findById(req.params.userId)
+    .orFail()
     .then((user) => res.send(user))
     .catch((err) => errorMessage(req, res, err));
-};
+}
 
 // функция обновления информации о пользователе
-const updateProfile = (req, res) => {
+function updateProfile(req, res) {
   const { name, about } = req.body;
   const userId = req.user._id;
 
@@ -39,7 +40,7 @@ const updateProfile = (req, res) => {
     .orFail()
     .then((user) => res.send(user))
     .catch((err) => errorMessage(req, res, err));
-};
+}
 
 // функция обновления аватара
 const updateAvatar = (req, res) => {

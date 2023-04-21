@@ -1,5 +1,5 @@
-const Card = require("../models/card");
-const errorMessage = require("../utils/errorMessage");
+const Card = require('../models/card');
+const errorMessage = require('../utils/errorMessage');
 
 // функция возврата всех каточек
 const getCard = (req, res) => {
