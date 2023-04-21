@@ -1,5 +1,5 @@
-const Card = require("../models/card");
-const { errorMessage } = require("../utils/errorMessage");
+const Card = require('../models/card');
+const { errorMessage } = require('../utils/errorMessage');
 
 // функция возврата всех каточек
 const getCard = (req, res) => {
@@ -24,6 +24,7 @@ const createCard = (req, res) => {
 // функция удаления карточки
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
+    .orFail()
     .then((card) => {
       res.send(card);
     })
@@ -35,10 +36,11 @@ const likeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
-    { new: true }
+    { new: true },
   )
+    .orFail()
     .then((card) => {
-      res.send(card);
+      res.send({ data: card });
     })
     .catch((err) => errorMessage(req, res, err));
 };
@@ -48,8 +50,9 @@ const dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
-    { new: true }
+    { new: true },
   )
+    .orFail()
     .then((card) => {
       res.send(card);
     })

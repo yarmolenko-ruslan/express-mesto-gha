@@ -1,5 +1,5 @@
-const User = require("../models/user");
-const { errorMessage } = require("../utils/errorMessage");
+const User = require('../models/user');
+const { errorMessage } = require('../utils/errorMessage');
 
 // функция создания пользователя
 function createUser(req, res) {
@@ -35,7 +35,7 @@ function updateProfile(req, res) {
   User.findByIdAndUpdate(
     userId,
     { name, about },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
     .orFail()
     .then((user) => res.send(user))
@@ -47,7 +47,9 @@ const updateAvatar = (req, res) => {
   const { avatar } = req.body;
   const userId = req.user._id;
 
-  User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true })
+  User.findByIdAndUpdate(userId, { avatar },
+    { new: true, runValidators: true },
+    )
     .then((user) => res.send(user))
     .catch((err) => errorMessage(req, res, err));
 };
