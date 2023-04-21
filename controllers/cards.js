@@ -1,5 +1,5 @@
-const Card = require('../models/card');
-const errorMessage = require('../utils/errorMessage');
+const Card = require("../models/card");
+const { errorMessage } = require("../utils/errorMessage");
 
 // функция возврата всех каточек
 const getCard = (req, res) => {
@@ -56,4 +56,10 @@ const dislikeCard = (req, res) => {
     .catch((err) => errorMessage(req, res, err));
 };
 
-module.exports = { createCard, getCard, deleteCard, dislikeCard, likeCard };
+module.exports = {
+  createCard,
+  getCard,
+  deleteCard,
+  dislikeCard,
+  likeCard,
+};

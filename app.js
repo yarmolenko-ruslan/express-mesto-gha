@@ -22,14 +22,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// создаем роуты
+app.use(router);
+
 app.use((req, res) => {
   res
     .status(NOT_FOUND_ERROR)
     .send({ message: 'Запрашиваемый ресурс не найден' });
 });
-
-// создаем роуты
-app.use(router);
 
 // устанавливаем порт и сообщение в консоли при запуске сервера
 app.listen(PORT, () => {

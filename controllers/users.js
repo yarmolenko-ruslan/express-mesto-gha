@@ -1,5 +1,5 @@
-const User = require('../models/user');
-const errorMessage = require('../utils/errorMessage');
+const User = require("../models/user");
+const { errorMessage } = require("../utils/errorMessage");
 
 // функция создания пользователя
 function createUser(req, res) {
@@ -7,7 +7,7 @@ function createUser(req, res) {
 
   User.create({ name, about, avatar })
     .then((user) => res.send(user))
-    .catch((err) => errorMessage(req, res, err));
+    .catch((err) => errorMessage(req, res, err) );
 }
 
 // функция возврата всех пользователей
