@@ -1,17 +1,21 @@
-const User = require("../models/user");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/user');
 
-const { errorMessage } = require("../utils/errorMessage");
-const { NOT_FOUND_ERROR } = require("../errors/notFoundError");
-const { CREATED, OK } = require("../errors/success");
+const { errorMessage } = require('../utils/errorMessage');
+const { NOT_FOUND_ERROR } = require('../errors/notFoundError');
+const { CREATED, OK } = require('../errors/success');
 
 // функция создания пользователя
 function createUser(req, res, next) {
-  const { name, about, avatar, email, password } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
   bcrypt
     .hash(password, 10)
-    .then((hash) => User.create({ name, about, avatar, email, password: hash }))
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
     .then((user) => User.findOne({ _id: user._id }))
     .then((user) => res.status(CREATED).send({ data: user }))
     .catch((err) => errorMessage(err, req, res, next));
@@ -28,7 +32,7 @@ function getUser(req, res) {
 function getCurrentUser(req, res, next) {
   User.findById(req.user._id)
     .orFail(() => {
-      throw new NOT_FOUND_ERROR("Пользователь с таким id не найден");
+      throw new NOT_FOUND_ERROR('Пользователь с таким id не найден');
     })
     .then((user) => res.status(OK).send(user))
     .catch((err) => errorMessage(err, req, res, next));
@@ -38,7 +42,7 @@ function getCurrentUser(req, res, next) {
 function findUserById(req, res, next) {
   User.findById(req.params.userId)
     .orFail(() => {
-      throw new NOT_FOUND_ERROR("Пользователь не найден");
+      throw new NOT_FOUND_ERROR('Пользователь не найден');
     })
     .then((user) => res.send(user))
     .catch((err) => errorMessage(err, req, res, next));
@@ -52,10 +56,10 @@ function updateProfile(req, res, next) {
   User.findByIdAndUpdate(
     userId,
     { name, about },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
     .orFail(() => {
-      throw new NOT_FOUND_ERROR("Пользователь с таким id не найден");
+      throw new NOT_FOUND_ERROR('Пользователь с таким id не найден');
     })
     .then((user) => res.send(user))
     .catch((err) => errorMessage(err, req, res, next));
@@ -68,7 +72,7 @@ const updateAvatar = (req, res, next) => {
 
   User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true })
     .orFail(() => {
-      throw new NOT_FOUND_ERROR("Пользователь с таким id не найден");
+      throw new NOT_FOUND_ERROR('Пользователь с таким id не найден');
     })
     .then((user) => res.send(user))
     .catch((err) => errorMessage(err, req, res, next));
@@ -80,8 +84,8 @@ const login = (req, res, next) => {
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, "some-secret-key", {
-        expiresIn: "7d",
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', {
+        expiresIn: '7d',
       });
       res.send({ jwt: token });
     })

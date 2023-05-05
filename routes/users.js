@@ -1,51 +1,51 @@
-const usersRouter = require("express").Router();
-const { celebrate, Joi } = require("celebrate");
+const usersRouter = require('express').Router();
+const { celebrate, Joi } = require('celebrate');
 const {
   getUser,
   updateProfile,
   updateAvatar,
   findUserById,
   getCurrentUser,
-} = require("../controllers/users");
+} = require('../controllers/users');
 
 // вернуть всех пользователей базы
-usersRouter.get("/", getUser);
+usersRouter.get('/', getUser);
 // возвращает информацию о текущем пользователе
-usersRouter.get("/me", getCurrentUser);
+usersRouter.get('/me', getCurrentUser);
 // обновить информацию о пользователе
 usersRouter.patch(
-  "/me",
+  '/me',
   celebrate({
     body: Joi.object().keys({
       name: Joi.string().min(2).max(30).required(),
       about: Joi.string().min(2).max(30).required(),
     }),
   }),
-  updateProfile
+  updateProfile,
 );
 // обновить аватар
 usersRouter.patch(
-  "/me/avatar",
+  '/me/avatar',
   celebrate({
     body: Joi.object().keys({
       avatar: Joi.string()
         .required()
         .pattern(
-          /https?:\/\/(www\.)?([\w-]+\.)+\w+[\w\-._~:/?#[\]@!$&'()*,;=]*/
+          /https?:\/\/(www\.)?([\w-]+\.)+\w+[\w\-._~:/?#[\]@!$&'()*,;=]*/,
         ),
     }),
   }),
-  updateAvatar
+  updateAvatar,
 );
 // возвращает определенного пользователя
 usersRouter.get(
-  "/:userId",
+  '/:userId',
   celebrate({
     params: Joi.object().keys({
       userId: Joi.string().required().hex().length(24),
     }),
   }),
-  findUserById
+  findUserById,
 );
 
 module.exports = usersRouter;
