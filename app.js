@@ -1,34 +1,65 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const router = require('./routes');
-const { NOT_FOUND_ERROR } = require('./utils/errorMessage');
+const express = require("express");
+const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+
+const router = require("./routes");
+const auth = require("./middlewares/auth");
+const { createUser, login } = require("./controllers/users");
+const { celebrate, Joi, errors } = require("celebrate");
+
+const { NOT_FOUND_ERROR } = require("./utils/errorMessage");
+const app = express();
 
 // устанавливаем переменную PORT и задаем дефолтное знаение
 const { PORT = 3000 } = process.env;
-mongoose.connect('mongodb://localhost:27017/mestodb');
-const app = express();
 
-// парсим файл json
+mongoose.connect("mongodb://localhost:27017/mestodb");
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// временное решение заменяющее id пользователя
-app.use((req, res, next) => {
-  req.user = {
-    _id: '643cd1803d774ff3217cf717',
-  };
-
-  next();
-});
-
-// создаем роуты
+app.use(auth);
 app.use(router);
+app.use(errors());
+
+app.post(
+  "/signin",
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required(),
+    }),
+  }),
+  login
+);
+app.post(
+  "/signup",
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required(),
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
+      avatar: Joi.string().pattern(
+        /https?:\/\/(www\.)?([\w-]+\.)+\w+[\w\-._~:/?#[\]@!$&'()*,;=]*/
+      ),
+    }),
+  }),
+  createUser
+);
 
 app.use((req, res) => {
   res
     .status(NOT_FOUND_ERROR)
-    .send({ message: 'Запрашиваемый ресурс не найден' });
+    .send({ message: "Запрашиваемый ресурс не найден" });
+});
+
+// создаем централизованный обработчик ошибок
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+
+  res.status(statusCode).send({
+    message: statusCode === 500 ? "На сервере произошла ошибка" : message,
+  });
 });
 
 // устанавливаем порт и сообщение в консоли при запуске сервера
