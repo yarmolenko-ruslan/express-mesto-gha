@@ -1,21 +1,22 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 
-const { celebrate, Joi, errors } = require('celebrate');
-const router = require('./routes');
-const auth = require('./middlewares/auth');
-const { createUser, login } = require('./controllers/users');
-
-const { NOT_FOUND_ERROR } = require('./utils/errorMessage');
-
+const { PORT = 3000 } = process.env;
 const app = express();
 
-// устанавливаем переменную PORT и задаем дефолтное знаение
-const { PORT = 3000 } = process.env;
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const { celebrate, Joi, errors } = require('celebrate');
+
+const { NOT_FOUND_ERROR } = require('./errors/notFoundError');
+const { login, createUser } = require('./controllers/user');
+const { auth } = require('./middlewares/auth');
+const router = require('./routes/index');
+
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(requestLogger);
 
 app.post(
   '/signin',
@@ -27,6 +28,7 @@ app.post(
   }),
   login,
 );
+
 app.post(
   '/signup',
   celebrate({
@@ -44,28 +46,31 @@ app.post(
 );
 
 app.use(auth);
-
 app.use(router);
-app.use(errors());
 
-app.use((req, res) => {
-  res
-    .status(NOT_FOUND_ERROR)
-    .send({ message: 'Запрашиваемый ресурс не найден' });
+app.use((req, res, next) => {
+  next(new NOT_FOUND_ERROR('Запрашиваемый ресурс не найден'));
 });
 
-// создаем централизованный обработчик ошибок
-app.use((err, req, res) => {
+app.use(errorLogger);
+
+app.use(errors());
+
+app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
 
   res.status(statusCode).send({
     message: statusCode === 500 ? 'На сервере произошла ошибка' : message,
   });
+  next();
 });
 
-mongoose.connect('mongodb://localhost:27017/mestodb');
+async function main() {
+  await mongoose.connect('mongodb://localhost:27017/mestodb');
+  console.log('Сервер подключен к базе данных');
 
-// устанавливаем порт и сообщение в консоли при запуске сервера
-app.listen(PORT, () => {
+  await app.listen(PORT);
   console.log(`Сервер слушает запросы на ${PORT} порту...`);
-});
+}
+
+main();

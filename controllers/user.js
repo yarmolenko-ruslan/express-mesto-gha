@@ -1,55 +1,57 @@
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const User = require('../models/user');
-
 const { errorMessage } = require('../utils/errorMessage');
 const { NOT_FOUND_ERROR } = require('../errors/notFoundError');
-const { CREATED, OK } = require('../errors/success');
+const { CREATED, OK } = require('../utils/successes');
 
 // функция создания пользователя
-function createUser(req, res, next) {
+const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
+
   bcrypt
     .hash(password, 10)
     .then((hash) => User.create({
-      name, about, avatar, email, password: hash,
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
     }))
     .then((user) => User.findOne({ _id: user._id }))
     .then((user) => res.status(CREATED).send({ data: user }))
     .catch((err) => errorMessage(err, req, res, next));
-}
-
+};
 // функция возврата всех пользователей
-function getUser(req, res) {
+const getUser = (req, res) => {
   User.find({})
-    .then((user) => res.send(user))
+    .then((user) => res.send({ data: user }))
     .catch((err) => errorMessage(err, req, res));
-}
-
+};
 // функция возвращает информацию о текущем пользователе
-function getCurrentUser(req, res, next) {
+const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .orFail(() => {
       throw new NOT_FOUND_ERROR('Пользователь с таким id не найден');
     })
     .then((user) => res.status(OK).send(user))
     .catch((err) => errorMessage(err, req, res, next));
-}
+};
 
 // функция возвращает пользователя по id
-function findUserById(req, res, next) {
+const findUserById = (req, res, next) => {
   User.findById(req.params.userId)
     .orFail(() => {
       throw new NOT_FOUND_ERROR('Пользователь не найден');
     })
     .then((user) => res.send(user))
     .catch((err) => errorMessage(err, req, res, next));
-}
+};
 
 // функция обновления информации о пользователе
-function updateProfile(req, res, next) {
+const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   const userId = req.user._id;
 
@@ -63,7 +65,7 @@ function updateProfile(req, res, next) {
     })
     .then((user) => res.send(user))
     .catch((err) => errorMessage(err, req, res, next));
-}
+};
 
 // функция обновления аватара
 const updateAvatar = (req, res, next) => {
@@ -74,7 +76,7 @@ const updateAvatar = (req, res, next) => {
     .orFail(() => {
       throw new NOT_FOUND_ERROR('Пользователь с таким id не найден');
     })
-    .then((user) => res.send(user))
+    .then((user) => res.send({ data: user }))
     .catch((err) => errorMessage(err, req, res, next));
 };
 
@@ -93,11 +95,11 @@ const login = (req, res, next) => {
 };
 
 module.exports = {
-  createUser,
-  getUser,
-  getCurrentUser,
-  findUserById,
-  updateProfile,
-  updateAvatar,
   login,
+  updateAvatar,
+  updateProfile,
+  findUserById,
+  getCurrentUser,
+  getUser,
+  createUser,
 };

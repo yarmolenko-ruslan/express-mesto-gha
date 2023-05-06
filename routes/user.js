@@ -1,19 +1,20 @@
-const usersRouter = require('express').Router();
+const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
+
 const {
   getUser,
+  findUserById,
   updateProfile,
   updateAvatar,
-  findUserById,
   getCurrentUser,
-} = require('../controllers/users');
+} = require('../controllers/user');
 
 // вернуть всех пользователей базы
-usersRouter.get('/', getUser);
+router.get('/', getUser);
 // возвращает информацию о текущем пользователе
-usersRouter.get('/me', getCurrentUser);
+router.get('/me', getCurrentUser);
 // обновить информацию о пользователе
-usersRouter.patch(
+router.patch(
   '/me',
   celebrate({
     body: Joi.object().keys({
@@ -24,7 +25,7 @@ usersRouter.patch(
   updateProfile,
 );
 // обновить аватар
-usersRouter.patch(
+router.patch(
   '/me/avatar',
   celebrate({
     body: Joi.object().keys({
@@ -37,8 +38,8 @@ usersRouter.patch(
   }),
   updateAvatar,
 );
-// возвращает определенного пользователя
-usersRouter.get(
+// возвращает определенного пользователя по id
+router.get(
   '/:userId',
   celebrate({
     params: Joi.object().keys({
@@ -48,4 +49,4 @@ usersRouter.get(
   findUserById,
 );
 
-module.exports = usersRouter;
+module.exports = router;

@@ -1,34 +1,27 @@
-const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const validator = require('validator');
-
-const { UNAUTHORIZED_ERROR } = require('../errors/unauthorizedError');
+const bcrypt = require('bcrypt');
+const { UNAUTHORIZED_ERROR } = require('../errors/errors');
 
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
-    minlength: 2,
+    minlength: [2, 'Must be at least 2, got {VALUE}'],
     maxlength: 30,
     default: 'Жак-Ив Кусто',
   },
   about: {
     type: String,
-    required: true,
     minlength: 2,
     maxlength: 30,
     default: 'Исследователь',
   },
   avatar: {
     type: String,
-    required: true,
-    default:
-      'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     validate: {
       validator(v) {
-        return /https?:\/\/(www\.)?([\w-]+\.)+\w+[\w\-._~:/?#[\]@!$&'()*,;=]*/gm.test(
-          v,
-        );
+        return (/https?:\/\/(www\.)?([\w-]+\.)+\w+[\w\-._~:/?#[\]@!$&'()*,;=]*/gm.test(v));
       },
       message: 'Неправильный формат ссылки',
     },
@@ -44,9 +37,9 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Заполните поле'],
-    select: false,
+    required: [true, 'Поле должно быть заполнено'],
     minlength: 8,
+    select: false,
   },
 });
 
@@ -57,12 +50,15 @@ userSchema.statics.findUserByCredentials = function (email, password) {
       if (!user) {
         throw new UNAUTHORIZED_ERROR('Неправильные почта или пароль');
       }
-      return bcrypt.compare(password, user.password).then((matched) => {
-        if (!matched) {
-          throw new UNAUTHORIZED_ERROR('Неправильные почта или пароль');
-        }
-        return user;
-      });
+
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            throw new UNAUTHORIZED_ERROR('Неправильные почта или пароль');
+          }
+
+          return user;
+        });
     });
 };
 

@@ -1,27 +1,24 @@
 const Card = require('../models/card');
-
 const { errorMessage } = require('../utils/errorMessage');
 const { NOT_FOUND_ERROR } = require('../errors/notFoundError');
 const { FORBIDDEN_ERROR } = require('../errors/forbiddenError');
-const { CREATED } = require('../errors/success');
+const { CREATED } = require('../utils/successes');
 
 // функция возврата всех каточек
 const getCard = (req, res, next) => {
   Card.find({})
-    .then((card) => res.send(card))
+    .then((card) => res.send({ data: card }))
     .catch((err) => errorMessage(err, req, res, next));
 };
-
 // функция создания карточки
 const createCard = (req, res, next) => {
   const { name, link } = req.body;
   const ownerId = req.user._id;
 
   Card.create({ name, link, owner: ownerId })
-    .then((newCard) => res.status(CREATED).send({ data: newCard }))
+    .then((card) => res.status(CREATED).send({ data: card }))
     .catch((err) => errorMessage(err, req, res, next));
 };
-
 // функция удаления карточки
 const deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
@@ -29,15 +26,14 @@ const deleteCard = (req, res, next) => {
       throw new NOT_FOUND_ERROR('Карточка с таким id не найдена');
     })
     .then((card) => {
-      if (!card.owner === req.user._id) {
+      if (!card.owner.equals(req.user._id)) {
         throw new FORBIDDEN_ERROR('Эту карточку нельзя удалить');
       }
       return Card.findByIdAndRemove(req.params.cardId);
     })
-    .then((card) => res.send(card))
+    .then((card) => res.send({ data: card }))
     .catch((err) => errorMessage(err, req, res, next));
 };
-
 // функция лайка карточки
 const likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
@@ -51,9 +47,8 @@ const likeCard = (req, res, next) => {
     .then((card) => res.send({ data: card }))
     .catch((err) => errorMessage(err, req, res, next));
 };
-
 // функция отменя лайка карточки
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
@@ -62,14 +57,10 @@ const dislikeCard = (req, res) => {
     .orFail(() => {
       throw new NOT_FOUND_ERROR('Карточка с таким id не найдена');
     })
-    .then((card) => res.send(card))
-    .catch((err) => errorMessage(req, res, err));
+    .then((card) => res.send({ data: card }))
+    .catch((err) => errorMessage(err, req, res, next));
 };
 
 module.exports = {
-  getCard,
-  createCard,
-  deleteCard,
-  likeCard,
-  dislikeCard,
+  getCard, createCard, deleteCard, likeCard, dislikeCard,
 };
